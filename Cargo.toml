@@ -1,6 +1,6 @@
 [package]
 name = "arceos-lazymapping"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2024"
 authors = ["Lei Shi <shi_lei@massclouds.com>", "Yu Chen <yuchen@tsinghua.edu.cn>"]
 description = "Lazy page mapping for ArceOS: loads and runs a user-space app with demand paging and syscall handling"
@@ -23,6 +23,8 @@ include = [
 
 [features]
 default = []
+# Payload feature to enable building the origin binary
+payload = []
 # NOTE: axstd/fs is NOT used because arceos_api 0.2.2-preview.1 has an API
 # mismatch with axfs 0.2.2-preview.1. Instead, we enable filesystem via
 # axfeat/fs + axfeat/fs-fat and use axfs directly for file operations.
@@ -37,6 +39,11 @@ xtask = ["dep:clap", "dep:fatfs"]
 name = "xtask"
 path = "xtask/src/main.rs"
 required-features = ["xtask"]
+
+[[bin]]
+name = "origin"
+path = "payload/src/main.rs"
+required-features = ["payload"]
 
 [dependencies]
 axstd = { version = "0.2.2-preview.1", features = ["defplat", "alloc", "paging", "multitask", "sched-cfs", "uspace"], optional = true }
@@ -65,3 +72,6 @@ clap = { version = "4", features = ["derive"], optional = true }
 fatfs = { version = "0.3.6", optional = true }
 
 [profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"

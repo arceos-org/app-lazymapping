@@ -86,9 +86,6 @@ fn install_config(root: &Path, arch: &str) {
 /// Build the user-space payload binary for the target architecture.
 /// Equivalent to `make payload` in the original workflow.
 fn build_payload(root: &Path, info: &ArchInfo) -> PathBuf {
-    let payload_dir = root.join("payload");
-    let manifest = payload_dir.join("Cargo.toml");
-
     println!("Building payload for {} ...", info.target);
     let status = Command::new("cargo")
         .args([
@@ -96,8 +93,12 @@ fn build_payload(root: &Path, info: &ArchInfo) -> PathBuf {
             "--release",
             "--target",
             info.target,
+            "--bin",
+            "origin",
+            "--features",
+            "payload",
             "--manifest-path",
-            manifest.to_str().unwrap(),
+            root.join("Cargo.toml").to_str().unwrap(),
         ])
         .status()
         .expect("failed to execute cargo build for payload");
@@ -107,7 +108,7 @@ fn build_payload(root: &Path, info: &ArchInfo) -> PathBuf {
     }
 
     // Objcopy to flat binary
-    let elf = payload_dir
+    let elf = root
         .join("target")
         .join(info.target)
         .join("release")
