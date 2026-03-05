@@ -35,6 +35,6 @@ fn load_file(fname: &str, buf: &mut [u8]) -> Result<usize, axio::Error> {
     ax_println!("app: {}", fname);
     let ctx = ROOT_FS_CONTEXT.get().expect("Root FS not initialized");
     let file = axfs::File::open(ctx, fname).map_err(|_| axio::Error::NotFound)?;
-    let n = (&file).read(buf)?;
+    let n = file.read(buf)?;
     Ok(n)
 }
