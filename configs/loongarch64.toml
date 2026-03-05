@@ -14,6 +14,7 @@ ticks-per-sec = 100 # uint
 # Device specifications
 #
 [devices]
+ipi-irq = 12
 eiointc-irq = 0x03 # uint
 # eiointc@1400 {
 #     reg = <0x00 0x1400 0x00 0x800>;
@@ -90,7 +91,7 @@ virtio-mmio-ranges = [] # [(uint, uint)]
 # Stack size on bootstrapping. (256K)
 boot-stack-size = 0x40000 # uint
 # Number of CPUs.
-cpu-num = 1 # uint
+max-cpu-num = 1 # uint
 # Base address of the high physical memory.
 high-memory-base = 0x8000_0000 # uint
 # Kernel address space base.

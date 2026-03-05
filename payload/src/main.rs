@@ -34,12 +34,7 @@ unsafe extern "C" fn _start() -> ! {
         );
 
         #[cfg(target_arch = "x86_64")]
-        core::arch::asm!(
-            "push rax",
-            "mov rax, 93",
-            "syscall",
-            options(noreturn)
-        );
+        core::arch::asm!("push rax", "mov rax, 93", "syscall", options(noreturn));
 
         #[cfg(target_arch = "loongarch64")]
         core::arch::asm!(

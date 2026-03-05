@@ -5,7 +5,10 @@ use std::process::{self, Command};
 
 /// ArceOS lazymapping multi-architecture build & run tool
 #[derive(Parser)]
-#[command(name = "xtask", about = "Build and run arceos-lazymapping on different architectures")]
+#[command(
+    name = "xtask",
+    about = "Build and run arceos-lazymapping on different architectures"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Cmd,
@@ -149,10 +152,7 @@ fn create_fat_disk_image(path: &Path, payload_bin: &Path) {
         );
         process::exit(1);
     });
-    println!(
-        "Payload binary size: {} bytes",
-        payload_data.len()
-    );
+    println!("Payload binary size: {} bytes", payload_data.len());
 
     // Create or truncate the image file
     let file = std::fs::OpenOptions::new()

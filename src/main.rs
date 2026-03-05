@@ -34,19 +34,12 @@ const APP_ENTRY: usize = 0x1000;
 fn main() {
     #[cfg(feature = "axstd")]
     {
-        use alloc::sync::Arc;
-        use axhal::paging::{MappingFlags, PageSize};
-        use axmm::backend::SharedPages;
+        use axhal::paging::MappingFlags;
         use memory_addr::va;
 
-        // A new address space for user app (equivalent to axmm::new_user_aspace()).
+        // A new address space for user app using axmm::new_user_aspace().
         // User space: [0x0, 0x40_0000_0000) — 256GB, below kernel space.
-        let mut uspace = axmm::AddrSpace::new_empty(va!(0x0), 0x40_0000_0000).unwrap();
-
-        // Copy kernel page table entries so kernel code is accessible in user tasks.
-        uspace
-            .copy_mappings_from(&axmm::kernel_aspace().lock())
-            .unwrap();
+        let mut uspace = axmm::new_user_aspace(va!(0x0), 0x40_0000_0000).unwrap();
 
         // Load user app binary file into address space.
         if let Err(e) = loader::load_user_app("/sbin/origin", &mut uspace) {
@@ -54,11 +47,9 @@ fn main() {
         }
 
         // Init user stack with LAZY mapping:
-        // 1. Pre-allocate physical pages via SharedPages
-        // 2. Map the area with SharedBackend (which eagerly maps page table entries)
-        // 3. Unmap all page table entries to enable demand paging
+        // Use map_alloc with populate=false to enable demand paging.
         // When user touches the stack, a page fault occurs, and the handler
-        // re-maps the page from the pre-allocated pool.
+        // allocates and maps the page on demand.
         let ustack_top = uspace.end();
         let ustack_vaddr = ustack_top - USER_STACK_SIZE;
         ax_println!(
@@ -67,36 +58,19 @@ fn main() {
             ustack_top
         );
 
-        let stack_pages = Arc::new(
-            SharedPages::new(USER_STACK_SIZE, PageSize::Size4K).unwrap(),
-        );
-        let stack_pages_for_fault = stack_pages.clone();
-
         uspace
-            .map(
+            .map_alloc(
                 ustack_vaddr,
                 USER_STACK_SIZE,
                 MappingFlags::READ | MappingFlags::WRITE | MappingFlags::USER,
-                true,
-                axmm::backend::Backend::new_shared(ustack_vaddr, stack_pages),
+                false, // populate=false: lazy/demand paging
             )
             .unwrap();
-
-        // Unmap all stack page table entries for lazy/demand paging.
-        // The area remains registered so the address range is reserved.
-        // NOTE: The actual unmap is done inside the task closure (in task.rs)
-        // because on x86_64, the TLB flush must happen while the user page
-        // table is active (after task scheduling).
 
         ax_println!("New user address space: {:#x?}", uspace);
 
         // Let's kick off the user process.
-        let user_task = task::spawn_user_task(
-            uspace,
-            ustack_top,
-            ustack_vaddr,
-            stack_pages_for_fault,
-        );
+        let user_task = task::spawn_user_task(uspace, ustack_top, ustack_vaddr);
 
         // Wait for user process to exit ...
         let exit_code = user_task.join();
