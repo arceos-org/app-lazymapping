@@ -70,11 +70,7 @@ fn main() {
         ax_println!("New user address space: {:#x?}", uspace);
 
         // Let's kick off the user process.
-        let user_task = task::spawn_user_task(
-            uspace,
-            ustack_top,
-            ustack_vaddr,
-        );
+        let user_task = task::spawn_user_task(uspace, ustack_top, ustack_vaddr);
 
         // Wait for user process to exit ...
         let exit_code = user_task.join();

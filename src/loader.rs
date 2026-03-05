@@ -16,10 +16,7 @@ pub fn load_user_app(fname: &str, uspace: &mut AddrSpace) -> Result<(), axio::Er
         .map_alloc(
             (APP_ENTRY).into(),
             PAGE_SIZE_4K,
-            MappingFlags::READ
-                | MappingFlags::WRITE
-                | MappingFlags::EXECUTE
-                | MappingFlags::USER,
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE | MappingFlags::USER,
             true,
         )
         .map_err(|_| axio::Error::NoMemory)?;

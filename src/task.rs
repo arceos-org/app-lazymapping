@@ -1,6 +1,6 @@
 use axhal::paging::MappingFlags;
-use axhal::uspace::{ReturnReason, UserContext};
 use axhal::trap::PageFaultFlags;
+use axhal::uspace::{ReturnReason, UserContext};
 use axmm::AddrSpace;
 use axtask::{AxTaskRef, TaskInner};
 use memory_addr::VirtAddr;
