@@ -122,7 +122,7 @@ check_publish() {
         # Install config file for the architecture
         cp "configs/${arch}.toml" ".axconfig.toml"
         
-        if cargo publish --dry-run --allow-dirty --target="$target"; then
+        if cargo publish --dry-run --allow-dirty --features="axstd" --target="$target"; then
             echo "✓ $arch publish check passed"
         else
             echo "Error: $arch publish check failed"
